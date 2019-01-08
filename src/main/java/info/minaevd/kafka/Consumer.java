@@ -1,8 +1,11 @@
 package info.minaevd.kafka;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 
@@ -10,7 +13,7 @@ import info.minaevd.Utils;
 
 public class Consumer
 {
-    private static final int MAX_ALLOWED_LATENCY = 2000;
+    private static final int MAX_ALLOWED_LATENCY = 5000;
 
     private final Properties properties = getProperties();
 
@@ -21,14 +24,23 @@ public class Consumer
         this.topic = topic;
     }
 
-    public ConsumerRecords<String, String> consume()
+    public Map<String, Integer> consume()
     {
-        ConsumerRecords<String, String> records;
+        Map<String, Integer> records = new HashMap<>();
 
         try (KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<>(properties)) {
             kafkaConsumer.subscribe(Collections.singletonList(topic));
 
-            records = kafkaConsumer.poll(MAX_ALLOWED_LATENCY);
+            long endPollingTimestamp = System.currentTimeMillis() + MAX_ALLOWED_LATENCY;
+
+            while ( System.currentTimeMillis() < endPollingTimestamp ) {
+                ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(100);
+                for ( ConsumerRecord<String, String> next : consumerRecords ) {
+                    String[] splitted = next.value().split(":");
+                    records.put(splitted[0], Integer.valueOf(splitted[1]));
+                }
+            }
+
         }
 
         return records;

@@ -3,8 +3,6 @@ package info.minaevd.cucumber;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.junit.Assert;
 
 import cucumber.api.java.en.Given;
@@ -17,7 +15,7 @@ public class StepDefinitions
 {
     private static final String TOPIC_PRODUCER = "src";
 
-    private static final String TOPIC_SUBSCRIPTIONS = "subscriptions";
+    private static final String TOPIC_SUBSCRIPTIONS = "control";
 
     private static final String TOPIC_CONSUMER = "dst";
 
@@ -53,14 +51,6 @@ public class StepDefinitions
 
     private Map<String, Integer> getConsumerRecords()
     {
-        ConsumerRecords<String, String> consumerRecords = consumer.consume();
-        Map<String, Integer> records = new HashMap<>();
-
-        for ( ConsumerRecord<String, String> next : consumerRecords ) {
-            String[] splitted = next.value().split(":");
-            records.put(splitted[0], Integer.valueOf(splitted[1]));
-        }
-
-        return records;
+        return consumer.consume();
     }
 }
